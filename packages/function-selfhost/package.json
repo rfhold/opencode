@@ -1,0 +1,15 @@
+{
+  "name": "@opencode-ai/function-selfhost",
+  "version": "1.0.35",
+  "$schema": "https://json.schemastore.org/package.json",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "hono": "catalog:",
+    "opendal": "^0.45.0"
+  }
+}
