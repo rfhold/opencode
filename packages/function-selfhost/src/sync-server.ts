@@ -69,7 +69,15 @@ export class SyncServer {
         result.push({ key, content: JSON.parse(content.toString()) })
       }
     }
-    return result
+    return result.sort((a, b) => {
+      const aType = a.key.split("/")[1]
+      const bType = b.key.split("/")[1]
+      if (aType === "info" && bType !== "info") return -1
+      if (aType !== "info" && bType === "info") return 1
+      if (aType === "message" && bType === "part") return -1
+      if (aType === "part" && bType === "message") return 1
+      return a.key.localeCompare(b.key)
+    })
   }
 
   async assertSecret(sessionId: string, secret: string) {
