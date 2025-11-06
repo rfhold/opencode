@@ -82,23 +82,36 @@ app.get("/share_data", async (c) => {
 
     let info
     const messages: Record<string, any> = {}
-    data.forEach((d) => {
-      const [root, type, ..._splits] = d.key.split("/")
-      if (root !== "session") return
+    const parts: Array<{ messageID: string; content: any }> = []
+
+    // First pass: collect info and messages, save parts for later
+    for (let i = data.length - 1; i >= 0; i--) {
+      const d = data[i]
+      const [root, type] = d.key.split("/")
+      if (root !== "session") continue
+
       if (type === "info") {
         info = d.content
-        return
-      }
-      if (type === "message") {
+        data.splice(i, 1)
+      } else if (type === "message") {
         messages[d.content.id] = {
           parts: [],
           ...d.content,
         }
+        data.splice(i, 1)
+      } else if (type === "part") {
+        parts.push({ messageID: d.content.messageID, content: d.content })
+        data.splice(i, 1)
       }
-      if (type === "part") {
-        messages[d.content.messageID].parts.push(d.content)
+    }
+
+    // Second pass: add parts to their messages
+    for (const part of parts) {
+      const message = messages[part.messageID]
+      if (message) {
+        message.parts.push(part.content)
       }
-    })
+    }
 
     return c.json({ info, messages })
   } catch (error) {
