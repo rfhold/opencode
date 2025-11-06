@@ -1,0 +1,35 @@
+FROM oven/bun:1.3-alpine AS base
+WORKDIR /app
+
+FROM base AS deps
+# Copy package.json files to resolve catalog references
+COPY package.json ./root.json
+COPY packages/function-selfhost/package.json ./pkg.json
+
+# Auto-resolve catalog references into standalone package.json
+RUN bun -e "\
+const root = await Bun.file('root.json').json(); \
+const pkg = await Bun.file('pkg.json').json(); \
+const catalog = root.workspaces.catalog; \
+const resolve = (deps) => Object.fromEntries(Object.entries(deps || {}).map(([k,v]) => [k, v === 'catalog:' ? catalog[k] : v])); \
+const output = { name: pkg.name, type: pkg.type, dependencies: resolve(pkg.dependencies) }; \
+await Bun.write('package.json', JSON.stringify(output, null, 2)); \
+"
+
+# Install dependencies
+RUN bun install --production
+
+FROM base AS build
+# Copy source files
+COPY packages/function-selfhost/src ./src
+# Copy installed dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+RUN bun build src/index.ts --compile --outfile=server
+
+FROM base AS runtime
+COPY --from=build /app/server .
+RUN chmod +x server
+
+EXPOSE 3000
+CMD ["./server"]

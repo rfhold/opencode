@@ -1,0 +1,50 @@
+# Dependencies (will be reinstalled)
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+.turbo/
+
+# Development
+.git/
+.github/
+.husky/
+*.log
+logs/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+coverage/
+**/coverage/
+test/
+**/test/
+
+# Misc - keep package files needed for workspace
+*.md
+
+# Specific packages we don't need (keep function-selfhost)
+packages/console/
+packages/desktop/
+packages/web/
+packages/ui/
+packages/opencode/
+packages/plugin/
+packages/slack/
+packages/function/
+packages/script/
+packages/sdk/
+sdks/
+specs/
+infra/
