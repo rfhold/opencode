@@ -10,7 +10,7 @@ services:
       - ./data:/app/data
     environment:
       - HOST=0.0.0.0
-      - WEB_DOMAIN=localhost:4321
+      - WEB_URL=http://localhost:4321
     restart: unless-stopped
 
   web:

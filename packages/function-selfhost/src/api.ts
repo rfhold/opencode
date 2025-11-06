@@ -20,10 +20,9 @@ app.post("/share_create", async (c) => {
     const short = SyncServer.shortName(sessionID)
     const secret = await syncServer.share(sessionID)
 
-    const webDomain = process.env.WEB_DOMAIN || "localhost:4321"
     const response = {
       secret,
-      url: `http://${webDomain}/s/${short}`,
+      url: `${process.env.WEB_URL || "http://localhost:4321"}/s/${short}`,
     }
     return c.json(response)
   } catch (error) {
