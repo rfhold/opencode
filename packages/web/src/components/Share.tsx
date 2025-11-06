@@ -37,7 +37,7 @@ function getStatusText(status: [Status, string?]): string {
   }
 }
 
-export default function Share(props: { id: string; api: string; info: Session.Info }) {
+export default function Share(props: { id: string; api: string; publicApi?: string; info: Session.Info }) {
   let lastScrollY = 0
   let hasScrolledToAnchor = false
   let scrollTimeout: number | undefined
@@ -73,7 +73,7 @@ export default function Share(props: { id: string; api: string; info: Session.In
   })
 
   onMount(() => {
-    const apiUrl = props.api
+    const apiUrl = props.publicApi || props.api
 
     if (!props.id) {
       setConnectionStatus(["error", "id not found"])
@@ -98,9 +98,16 @@ export default function Share(props: { id: string; api: string; info: Session.In
 
       setConnectionStatus(["connecting"])
 
-      // Always use secure WebSocket protocol (wss)
-      const wsBaseUrl = apiUrl.replace(/^https?:\/\//, "wss://")
-      const wsUrl = `${wsBaseUrl}/share_poll?id=${props.id}`
+      let wsUrl: string
+      try {
+        const url = new URL(apiUrl)
+        const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+        wsUrl = `${protocol}//${url.host}/share_poll?id=${props.id}`
+      } catch {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+        wsUrl = `${protocol}//${window.location.host}/share_poll?id=${props.id}`
+      }
+      
       console.log("Connecting to WebSocket URL:", wsUrl)
 
       // Create WebSocket connection

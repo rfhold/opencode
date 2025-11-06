@@ -9,14 +9,25 @@ import { rehypeHeadingIds } from "@astrojs/markdown-remark"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import { spawnSync } from "child_process"
 
+// Conditionally load adapter based on environment
+const getAdapter = async () => {
+  if (process.env.ASTRO_ADAPTER === "node") {
+    try {
+      const node = await import("@astrojs/node")
+      return node.default({ mode: "standalone" })
+    } catch {
+      console.warn("@astrojs/node not found, falling back to cloudflare adapter")
+    }
+  }
+  return cloudflare({ imageService: "passthrough" })
+}
+
 // https://astro.build/config
 export default defineConfig({
   site: config.url,
   base: "/docs",
   output: "server",
-  adapter: cloudflare({
-    imageService: "passthrough",
-  }),
+  adapter: await getAdapter(),
   devToolbar: {
     enabled: false,
   },
